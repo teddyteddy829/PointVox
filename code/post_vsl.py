@@ -1,7 +1,7 @@
 import numpy as np
 import tensorflow as tf
 from tensorflow.contrib import layers
-
+import scipy.io as io
 
 from vsl_main import*
 
@@ -24,12 +24,12 @@ from vsl_main import*
 
 
 class gen_model(object):
-	def __init__(self, obj_res,batch_size):
+	def __init__(self, obj_res,batch_size,loss):
 		self.obj_res=obj_res #By default 1024
 		self.batch_size=batch_size
 		self.input_shape = [self.batch_size] + [self.obj_res]
         self.x = tf.placeholder(tf.float32, self.input_shape) #First node of the graph
-
+        self.loss = tf.placeholder(tf.float32,self.loss)
         #Create the model, and the optimizer
         self._model_create()
         self._model_loss_optimizer()
@@ -86,7 +86,7 @@ class gen_model(object):
 
         self.x_rec = self.generate_model(network_weights['W'], network_weights['b'])
 
-       	x_rec_flat=np.reshape(x_rec,(27000,1))
+       	x_rec_flat=np.reshape(x_rec,(batch_size,27000,1))
         
         
 
@@ -98,7 +98,7 @@ class gen_model(object):
 
     def _model_loss_optimizer(self):
 
-    	self.rec_loss= tf.mean_squared_loss(x_rec_flat,x_input_flat)
+    	self.rec_loss= tf.mean_squared_loss(x_rec_flat,loss)
        	self.loss = tf.reduce_mean(self.rec_loss)
 
 
@@ -121,8 +121,8 @@ class gen_model(object):
 
 
 def main():
-	data = h5py.File('dataset/ModelNet40_res30_raw.mat')
-
+	data = h5py.File('data/airplane_model_sorted')
+	loss_data = io.loadmat('data/airplane_vox')
 	train_all = np.transpose(data['train'])
 	test_all  = np.transpose(data['test'])
 
@@ -146,11 +146,12 @@ def main():
 	    for i in range(train_batch):
 	        x_train = train_all[batch_size*i:batch_size*(i+1),1:]
 	        x_train = pointnet_pre_func(x_train) #Pointnet ready
+	        loss = loss_data[batch_size*i:batch_size(i+1),1:]
 	        feature_vector=pointnet.to_feature(x_train) #pointnet passed 
 	        # calculate and average kl and vae loss for each batch
 	        # cost[0] = np.mean(VSL.sess.run(VSL.kl_loss_all, feed_dict={VSL.x: x_train}))
 	        # cost[1] = np.mean(VSL.sess.run(VSL.rec_loss, feed_dict={VSL.x: x_train}))
-	        cost[0] = genM.model_fit(feature_vector)
+	        cost[0] = genM.model_fit(feature_vector,loss)
 	        avg_cost += cost / train_batch
 
 
