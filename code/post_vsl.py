@@ -64,7 +64,8 @@ class gen_model(object):
 
 
    	def generate_model(self,weights,bias):
-   		dec_conv1    = tf.nn.relu(tf.nn.conv3d_transpose(x, weights['dec_conv1'],
+   		x_tranform=np.reshape(x,(self.batch_size,2,2,2,128))
+   		dec_conv1    = tf.nn.relu(tf.nn.conv3d_transpose(x_transform, weights['dec_conv1'],
                                   output_shape=[self.batch_size, 5, 5, 5, 64],
                                   strides=[1, 1, 1, 1, 1],padding='VALID') + biases['dec_conv1'])
         dec_conv2    = tf.nn.relu(tf.nn.conv3d_transpose(dec_conv1, weights['dec_conv2'],
