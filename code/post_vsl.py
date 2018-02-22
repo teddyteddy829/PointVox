@@ -48,11 +48,11 @@ class gen_model(object):
     		self.weights_all = dict()
     		self.weights_all['W'] = {
 
-    		'dec_conv1': tf.get_variable(name='dec_conv1', shape=[4, 4, 4, 64, 1024],
+    		'dec_conv1': tf.get_variable(name='dec_conv1', shape=[4,4,4,64, 1024],
                                           initializer=layers.xavier_initializer()),
-            'dec_conv2': tf.get_variable(name='dec_conv2', shape=[5, 5, 5, 32, 64],
+            'dec_conv2': tf.get_variable(name='dec_conv2', shape=[6, 6, 6, 32, 64],
                                           initializer=layers.xavier_initializer()),
-            'dec_conv3': tf.get_variable(name='dec_conv3', shape=[6, 6, 6, 1, 32],
+            'dec_conv3': tf.get_variable(name='dec_conv3', shape=[8, 8, 8, 1, 32],
                                           initializer=layers.xavier_initializer())
             }
 
@@ -64,12 +64,12 @@ class gen_model(object):
 
 
    	def generate_model(self,weights,bias):
-   		x_tranform=np.reshape(x,(self.batch_size,2,2,2,128))
+   		x_tranform=np.reshape(x,(self.batch_size,1,1,1,1024))
    		dec_conv1    = tf.nn.relu(tf.nn.conv3d_transpose(x_transform, weights['dec_conv1'],
-                                  output_shape=[self.batch_size, 5, 5, 5, 64],
+                                  output_shape=[self.batch_size, 4, 4, 4, 64],
                                   strides=[1, 1, 1, 1, 1],padding='VALID') + biases['dec_conv1'])
         dec_conv2    = tf.nn.relu(tf.nn.conv3d_transpose(dec_conv1, weights['dec_conv2'],
-                                  output_shape=[self.batch_size, 13, 13, 13, 32],
+                                  output_shape=[self.batch_size, 12, 12, 12, 32],
                                   strides=[1, 2, 2, 2, 1], padding='VALID') + biases['dec_conv2'])
         dec_conv3    = tf.nn.sigmoid(tf.nn.conv3d_transpose(dec_conv2, weights['dec_conv3'],
                                      output_shape=[self.batch_size, 30, 30, 30, 1],
